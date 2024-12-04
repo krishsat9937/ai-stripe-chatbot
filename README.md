@@ -8,8 +8,8 @@ This repository contains a Flask-based chatbot application that integrates with 
 
 - **Chatbot Interface:** Accepts user queries and dynamically generates responses.
 - **Stripe Integration:** Creates Stripe payment links for specified products and quantities.
-- **OpenAI Function Calling:** Uses OpenAI’s function-calling feature to handle structured tasks like payment link generation.
-- **CORS Enabled:** Allows frontend applications to communicate with the Flask backend.
+- **OpenAI Function Calling:** Uses OpenAI’s function-calling feature to handle structured tasks like balance fetching, price creation, payment link creation etc.
+- **CORS Enabled:** Allows frontend applications to communicate with the Flask backend.(Made it simple for MVP, but not good for production)
 
 ---
 
@@ -28,7 +28,8 @@ This repository contains a Flask-based chatbot application that integrates with 
 
 ### 1. Run the Flask Server
 ```bash
-python app.py
+> pip install -r requirements.txt
+> python run.py
 ```
 
 The server will start on `http://127.0.0.1:5000`.
@@ -43,17 +44,10 @@ curl -X POST http://127.0.0.1:5000/chat \
 -d '{"message": "Create a payment link for the price id price_1QRdpxDWP6cwTy3QAV6IGeD6 and quantity 1"}'
 ```
 
-#### Example Response:
-```json
-{
-  "response": "Payment link: https://checkout.stripe.com/pay/abc123xyz"
-}
-```
-
----
-
 ## Frontend Integration
 
 A simple frontend can be added to interact with the chatbot. Use the provided `index.html` file as a starting point. Ensure the Flask server allows CORS requests to enable communication between the frontend and backend.
+
+![Screenshot 2024-12-04 at 3 19 22 PM](https://github.com/user-attachments/assets/518886bb-3426-40c7-b9a4-184f52419240)
 
 ---
