@@ -3,8 +3,8 @@ import logging
 
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from app.services import opensearch_service, openai_service, stripe_service
-from app.schemas.function_schemas import create_payment_link_function_schema
+from app.services import opensearch_service, openai_service
+from app.schemas.tools import FUNCTION_MAP as available_tools
 
 # log everything, and send it to stderr
 logging.basicConfig(level=logging.INFO)
@@ -23,32 +23,28 @@ def chat():
     opensearch_service.save_message_to_opensearch(user_message, user_id)
     context = opensearch_service.get_relevant_context(user_message)
 
-    messages = [{"role": "system", "content": "You are a helpful assistant."}]
+    messages = [{"role": "system", "content": "You are a helpful Stripe Chatbot assistant."}]
     for entry in context:
         role = "assistant" if entry["sender"] == "system" else "user"
         messages.append({"role": role, "content": entry["message"]})
     messages.append({"role": "user", "content": user_message})
 
-    response = openai_service.generate_response(messages, create_payment_link_function_schema)
+    response = openai_service.generate_response(messages)
     choice = response.choices[0]
 
     system_response = choice.message.content
+    completion_tool_calls = choice.message.tool_calls
 
-    if choice.message.function_call:
-        function_call = choice.message.function_call
-        arguments = json.loads(function_call.arguments)
-        try:
-            payment_link = stripe_service.create_payment_link(
-                price_id=arguments["price_id"],
-                quantity=arguments["quantity"]
-            )
-            print("Payment link:", payment_link["url"])
-            return jsonify({"response": f"Payment link: {payment_link['url']} (generated using Stripe)"})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
+    if completion_tool_calls:
+        for call in completion_tool_calls or []:
+            tool_to_call = available_tools[call.function.name]
+            args = json.loads(call.function.arguments)
+            result = tool_to_call(**args)
+            
+            return jsonify({"response": json.dumps(result)})
 
-    if system_response:
-        opensearch_service.save_message_to_opensearch(system_response, "system")
-    else:
-        return jsonify({"error": "No response from OpenAI"}), 500    
+        if system_response:
+            opensearch_service.save_message_to_opensearch(system_response, "system")
+        else:
+            return jsonify({"error": "No response from OpenAI"}), 500    
     return jsonify({"response": system_response})

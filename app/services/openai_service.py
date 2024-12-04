@@ -1,8 +1,10 @@
 
 import openai
+import json
 import logging
 
 from app.utils.env_variables import OPENAI_API_KEY
+from app.schemas.tools import TOOLS
 
 openai.api_key = OPENAI_API_KEY
 
@@ -10,26 +12,15 @@ openai.api_key = OPENAI_API_KEY
 logging.basicConfig(level=logging.INFO)
 
 
-def generate_response(messages, function_schema):
-    """
-    Generate a response using OpenAI's chat model.
-    
-    Args:
-        messages (list): A list of message dictionaries with roles ('system', 'user', 'assistant') and content.
-        function_schema (dict): Schema for defining function calls in OpenAI chat completion.
-
-    Returns:
-        dict: A dictionary containing the AI's response, including content and optional function call details.
-    """
+def generate_response(messages):    
     try:
-
-        logging.info(f"Generating response for messages: {messages} and function schema: {function_schema}")
+        logging.info(f"Generating response for messages: {messages}")
         # Generate response using OpenAI's Chat API
         response = openai.chat.completions.create(
             model="gpt-4-0613",  # Use the model of your choice
             messages=messages,
-            functions=[function_schema],
-            function_call="auto"  # Automatically decide whether to use a function call
+            tools=TOOLS,
+            # function_call="auto"  # Automatically decide whether to use a function call
         )
 
         logging.info(f"OpenAI response: {response}")
@@ -39,3 +30,16 @@ def generate_response(messages, function_schema):
         # Log or handle errors gracefully
         print(f"OpenAI API Error: {str(e)}")
         return {"content": None, "function_call": None}
+
+def handle_function_call(function_call):
+    """
+    Dynamically handle function calls returned by OpenAI.
+    """
+    function_name = function_call.name
+    arguments = json.loads(function_call.arguments)
+
+    if function_name in TOOLS:
+        tool_function = TOOLS[function_name]["function"]
+        return tool_function(**arguments)
+    else:
+        raise ValueError(f"Unknown function: {function_name}")
