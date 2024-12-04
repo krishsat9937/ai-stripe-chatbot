@@ -1,6 +1,6 @@
 # Flask Chatbot with Stripe Integration
 
-This repository contains a Flask-based chatbot application that integrates with Stripe to generate payment links dynamically. The chatbot is powered by OpenAI's GPT-4 model, allowing it to interpret user input and create payment links for specified products or services.
+This repository contains a Flask-based chatbot application that integrates with Stripe to make actions using various implemented methods. The chatbot is powered by OpenAI's GPT-4 model, allowing it to interpret user input and create payment links for specified products or services.
 
 ---
 
