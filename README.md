@@ -9,6 +9,7 @@ This repository contains a Flask-based chatbot application that integrates with 
 - **Chatbot Interface:** Accepts user queries and dynamically generates responses.
 - **Stripe Integration:** Creates Stripe payment links for specified products and quantities.
 - **OpenAI Function Calling:** Uses OpenAI’s function-calling feature to handle structured tasks like balance fetching, price creation, payment link creation etc.
+- **Opensearch:** Used OpenSearch vector db for persisting conversations
 - **CORS Enabled:** Allows frontend applications to communicate with the Flask backend.(Made it simple for MVP, but not good for production)
 
 ---
